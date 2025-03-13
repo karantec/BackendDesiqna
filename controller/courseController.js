@@ -19,11 +19,11 @@ const userLogin = async (req, res) => {
 // Create course
 const createCourse = async (req, res) => {
     try {
-        const { courseName, courseLink, courseImage, userId, month } = req.body;
+        const { courseName, courseLink, courseImage, userId, month, topic } = req.body;
 
         // Validate required fields
         if (!userId || !month || !courseName || !courseLink || !courseImage) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.status(400).json({ message: 'userId, month, courseName, courseLink, and courseImage are required' });
         }
 
         // Create a new course
@@ -32,7 +32,8 @@ const createCourse = async (req, res) => {
             courseLink,
             courseImage,
             userId,
-            month
+            month,
+            topic: topic || null // Ensure topic is optional
         });
 
         await newCourse.save();
@@ -42,18 +43,28 @@ const createCourse = async (req, res) => {
     }
 };
 
+
 // Get courses for a user by month
-const getCoursesByUserAndMonth = async (req, res) => {
+const getCoursesByTopicAndMonth = async (req, res) => {
     try {
-        const { userId, month } = req.query;
+        const { topic, month } = req.query;
 
         // Validate required query parameters
-        if (!userId || !month) {
-            return res.status(400).json({ message: 'userId and month are required' });
+        if (!topic) {
+            return res.status(400).json({ message: 'Topic is required' });
         }
 
-        // Fetch courses based on userId and month
-        const courses = await Course.find({ userId, month });
+        // Create a filter object dynamically
+        let filter = { topic };
+
+        // If month is provided, add it to the filter
+        if (month) {
+            filter.month = month;
+        }
+
+        // Fetch courses based on topic and optional month
+        const courses = await Course.find(filter);
+        
         res.status(200).json({ message: 'Courses fetched successfully', courses });
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch courses', error });
@@ -63,5 +74,5 @@ const getCoursesByUserAndMonth = async (req, res) => {
 module.exports = {
     userLogin,
     createCourse,
-    getCoursesByUserAndMonth
+    getCoursesByTopicAndMonth
 };
