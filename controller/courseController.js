@@ -2,18 +2,29 @@ const Course = require('../models/Course');
 
 // Login controller
 const userLogin = async (req, res) => {
-    const { username, password, month } = req.body; // Include month in login payload
+    const { username, password, month } = req.body;
 
-    // Validate credentials
-    if (username !== 'Student@75' || password !== '75student@desiqna.in') {
+    // ✅ Multiple allowed users
+    const users = [
+        { username: 'Student@75', password: '75student@desiqna.in', userId: 'user1' },
+        { username: 'Student123', password: 'Student123', userId: 'user2' }
+    ];
+
+    // ✅ Check if user exists
+    const validUser = users.find(
+        (user) => user.username === username && user.password === password
+    );
+
+    if (!validUser) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Simulate a userId for this example
-    const userId = 'user12345'; // Replace with real user authentication logic
-
-    // Send the month along with the userId in the response
-    res.status(200).json({ message: 'Login successful', userId, month });
+    // ✅ Send response
+    res.status(200).json({
+        message: 'Login successful',
+        userId: validUser.userId,
+        month
+    });
 };
 
 // Create course
