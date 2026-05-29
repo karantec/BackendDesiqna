@@ -3,55 +3,74 @@ const createError = require('http-errors');
 const morgan = require('morgan');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const courseRoutes=require('./routes/course.routes')
+const courseRoutes = require('./routes/course.routes');
 require('dotenv').config();
 
 const app = express();
+
+/**
+ * CORS MUST BE BEFORE ALL ROUTES
+ */
+app.use(
+  cors({
+    origin: [
+      'https://www.coursedesiqna.com',
+      'https://coursedesiqna.com',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
+
+// Handle preflight requests
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 
-// Example route
-app.get('/', async (req, res, next) => {
-  res.send({ message: 'Awesome it works 🐻' });
+// Health check route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Awesome it works 🐻',
+  });
 });
-app.use(cors());
-// app.use('/api', require('./routes/api.route'));
+
+// Routes
 app.use('/course', courseRoutes);
 
-// Middleware for handling 404 errors
+// 404 handler
 app.use((req, res, next) => {
   next(createError.NotFound());
 });
 
-// Error handling middleware
+// Error handler
 app.use((err, req, res, next) => {
-  res.status(err.status || 500);
-  res.send({
+  console.error(err);
+
+  res.status(err.status || 500).json({
     status: err.status || 500,
-    message: err.message,
+    message: err.message || 'Internal Server Error',
   });
 });
 
-// Connect to the database
+// Connect DB
 connectDB();
 
-// Function to log all routes with full URLs
+// Route logger
 const listRoutes = (app, baseUrl) => {
   console.log('📂 Available Routes:');
+
   app._router.stack.forEach((middleware) => {
     if (middleware.route) {
-      // Regular routes
-      const method = Object.keys(middleware.route.methods).join(', ').toUpperCase();
+      const method = Object.keys(
+        middleware.route.methods
+      ).join(', ').toUpperCase();
+
       console.log(`${method} ${baseUrl}${middleware.route.path}`);
-    } else if (middleware.name === 'router') {
-      // Nested router middleware
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          const method = Object.keys(handler.route.methods).join(', ').toUpperCase();
-          console.log(`${method} ${baseUrl}${handler.route.path}`);
-        }
-      });
     }
   });
 };
@@ -61,5 +80,9 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at ${BASE_URL}`);
-  listRoutes(app, BASE_URL); // Log all routes with full URLs
+  try {
+    listRoutes(app, BASE_URL);
+  } catch (err) {
+    console.log('Route listing skipped');
+  }
 });
