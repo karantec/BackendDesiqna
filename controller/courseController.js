@@ -8,7 +8,7 @@ const userLogin = async (req, res) => {
     const users = [
         { username: 'Student@75', password: '75student@desiqna.in', userId: 'user1' },
         { username: 'Student123', password: 'Student123', userId: 'user2' },
-         { username: 'Student@78', password: 'DesiqnaPro@123', userId: 'user3' },
+         { username: 'Student@78', password: 'Codeverse@963', userId: 'user3' },
         
     ];
 
