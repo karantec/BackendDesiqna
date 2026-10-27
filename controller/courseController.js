@@ -7,7 +7,9 @@ const userLogin = async (req, res) => {
     // ✅ Multiple allowed users
     const users = [
         { username: 'Student@75', password: '75student@desiqna.in', userId: 'user1' },
-        { username: 'Student123', password: 'Student123', userId: 'user2' }
+        { username: 'Student123', password: 'Student123', userId: 'user2' },
+         { username: 'Student@78', password: 'DesiqnaPro@123', userId: 'user3' },
+        
     ];
 
     // ✅ Check if user exists
